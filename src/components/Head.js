@@ -1,15 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toggleMenu } from "../utils/appSlice";
 import { YOUTUBE_SEARCH_API } from "../utils/constants";
+import { cacheResult } from "../utils/searchSlice";
 
 const Head = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   console.log(searchQuery);
 
+  const searchCache = useSelector((store) => store.search);
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    const timer = setTimeout(() => getSearchSuggestions(), 200);
+    const timer = setTimeout(() => {
+      if (searchCache[searchQuery]) {
+        setSuggestions(searchCache[searchQuery]);
+      } else {
+        getSearchSuggestions();
+      }
+    }, 200);
 
     return () => {
       clearTimeout(timer);
@@ -22,9 +33,12 @@ const Head = () => {
     const json = await data.json();
     //   console.log(json[1]);
     setSuggestions(json[1]);
+    dispatch(
+      cacheResult({
+        [searchQuery]: json[1],
+      })
+    );
   };
-
-  const dispatch = useDispatch();
 
   const toggleMenuHandler = () => {
     dispatch(toggleMenu());
@@ -55,12 +69,14 @@ const Head = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setShowSuggestions(false)}
           />
           <button className="border border-gray-400 px-5 py-0.5 rounded-r-full bg-gray-100">
             🔍
           </button>
         </div>
-        {suggestions.length > 0 && (
+        {suggestions.length > 0 && showSuggestions && (
           <div className="fixed bg-white py-2 px-2 w-[24rem] shadow-lg rounded-lg border border-gray-500">
             <ul>
               {suggestions.map((s) => (
