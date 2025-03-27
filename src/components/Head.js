@@ -8,7 +8,6 @@ const Head = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  console.log(searchQuery);
 
   const searchCache = useSelector((store) => store.search);
   const dispatch = useDispatch();
@@ -28,10 +27,9 @@ const Head = () => {
   }, [searchQuery]);
 
   const getSearchSuggestions = async () => {
-    console.log("Api call - " + searchQuery);
     const data = await fetch(YOUTUBE_SEARCH_API + searchQuery);
     const json = await data.json();
-    //   console.log(json[1]);
+
     setSuggestions(json[1]);
     dispatch(
       cacheResult({
@@ -72,7 +70,7 @@ const Head = () => {
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setShowSuggestions(false)}
           />
-          <button className="border border-gray-400 px-5 py-0.5 rounded-r-full bg-gray-100">
+          <button className="border border-gray-400 px-5 py-1 rounded-r-full bg-gray-100">
             🔍
           </button>
         </div>
